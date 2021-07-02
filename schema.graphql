@@ -1,0 +1,26 @@
+type Monster @entity {
+  id: ID!
+  number: BigInt
+
+  owner: Bytes
+  summoner: Bytes
+  minterContract: Bytes
+  parent1Id: BigInt
+  parent2Id: BigInt
+  contractOrder: BigInt
+  gen: BigInt
+  bits: BigInt
+  exp: BigInt
+  rarity: BigInt
+
+  tokenUri: String
+
+  onCalldataStaticHash: String
+  onCalldataAnimatedHash: String
+
+  onStorageName: String
+  onStorageLore: String
+  onStorageEpithet: String
+  onStorageImage: String
+}
+

@@ -1,0 +1,47 @@
+specVersion: 0.0.2
+description: Graph for 0xmon NFTs
+repository: https://github.com/NinjaShiroi/0xmons-thegraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: MonMinter
+    network: mainnet
+    source:
+      address: "0x0427743df720801825a5c82e0582b1e915e0f750"
+      abi: MonMinter
+      startBlock: 11533817
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Monster
+      abis:
+        - name: MonMinter
+          file: ./abis/MonMinter.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: MonImageRegistry
+    network: mainnet
+    source:
+      address: "0x2d824D66E1b7Ba0f73b5cAf75886abf812a13E67"
+      abi: MonImageRegistry
+      startBlock: 11753834
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - OwnershipTransferred
+        - hashChanged
+      abis:
+        - name: MonImageRegistry
+          file: ./abis/MonImageRegistry.json
+      callHandlers:
+        - function: registerMon(uint256,bytes,bool)
+          handler: handleRegisterMonster
+      file: ./src/mapping.ts
