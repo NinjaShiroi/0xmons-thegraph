@@ -15,12 +15,15 @@ type Monster @entity {
 
   tokenUri: String
 
-  onCalldataStaticHash: String
-  onCalldataAnimatedHash: String
+  onChainStatic: OnChainData
+  onChainAnimated: OnChainData
+}
 
-  onStorageName: String
-  onStorageLore: String
-  onStorageEpithet: String
-  onStorageImage: String
+type OnChainData @entity {
+  id: ID!, # hash of the uploadMon() for calldata, hash of the registerMon() for storage
+  name: String
+  lore: String
+  epithet: String
+  image: String
 }
 

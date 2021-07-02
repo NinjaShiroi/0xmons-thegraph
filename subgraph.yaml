@@ -42,6 +42,8 @@ dataSources:
         - name: MonImageRegistry
           file: ./abis/MonImageRegistry.json
       callHandlers:
+        - function: uploadMon(bytes)
+          handler: handleUploadMonster
         - function: registerMon(uint256,bytes,bool)
           handler: handleRegisterMonster
       file: ./src/mapping.ts

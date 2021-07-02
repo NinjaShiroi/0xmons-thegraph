@@ -1,24 +1,19 @@
-import {log} from "@graphprotocol/graph-ts"
+import {BigInt, Bytes, log} from "@graphprotocol/graph-ts"
 import {
   Transfer,
   MonMinter,
 } from "../generated/MonMinter/MonMinter"
 import {
   RegisterMonCall,
+  UploadMonCall,
 } from "../generated/MonImageRegistry/MonImageRegistry"
-import { Monster } from "../generated/schema"
+import {Monster, OnChainData} from "../generated/schema"
 
 export function handleTransfer(event: Transfer): void {
   let minterContract = MonMinter.bind(event.address)
 
   let monsterNumber = event.params.tokenId
-  let monsterId = monsterNumber.toHex()
-  let monster = Monster.load(monsterId)
-  if (monster == null) {
-    monster = new Monster(monsterId)
-  }
-
-  log.warning('0xmon #' + monsterId.toString(), [])
+  let monster = createOrLoadMonster(monsterNumber)
 
   let monRecords = minterContract.monRecords(monsterNumber)
 
@@ -33,42 +28,67 @@ export function handleTransfer(event: Transfer): void {
   monster.bits = monRecords.value6
   monster.exp = monRecords.value7
   monster.rarity = monRecords.value8
-
   monster.tokenUri = minterContract.tokenURI(monsterNumber)
 
   monster.save()
 }
 
+export function handleUploadMonster(call: UploadMonCall): void {
+  let txHash = call.transaction.hash
+  let packedData = call.inputs.s.toString()
+
+  log.warning('Handling calldata encoding', [])
+
+  unpackOnChainData(txHash, packedData)
+}
+
 export function handleRegisterMonster(call: RegisterMonCall): void {
   let monsterNumber = call.inputs.id
-  let monsterId = monsterNumber.toHex()
-  let txHash = call.inputs.txHash.toString()
-  let monster = Monster.load(monsterId)
-  if (monster == null) {
-    monster = new Monster(monsterId)
-  }
+  let monster = createOrLoadMonster(monsterNumber)
+  let txHash = call.transaction.hash
+  let packedData = call.inputs.txHash.toString()
 
-  if (txHash.includes('|')) {
+  if (packedData.includes('|')) {
     // encoded in storage
-    log.warning('Handling static 0xmon #' + monsterId.toString() + ' from STORAGE' + call.inputs.txHash.toString(), [])
-    let data = txHash.split('|')
-
-    if (data.length === 4) {
-      monster.onStorageName = data[0]
-      monster.onStorageLore = data[1]
-      monster.onStorageEpithet = data[2]
-      monster.onStorageImage = data[3]
-    }
+    log.warning('Handling static 0xmon #' + monsterNumber.toString() + ' from STORAGE', [])
+    unpackOnChainData(txHash, packedData)
+    monster.onChainStatic = packedData
   } else {
     // encoded in calldata
+    // in that case packedData is in fact the hash of the tx containing the packedData
     if (call.inputs.isStatic) {
-      log.warning('Handling static 0xmon #' + monsterId.toString() + ' from CALLDATA', [])
-      monster.onCalldataStaticHash = call.inputs.txHash.toHexString()
+      log.warning('Handling static 0xmon #' + monsterNumber.toString() + ' from CALLDATA', [])
+      monster.onChainStatic = packedData
     } else {
-      log.warning('Handling animated 0xmon #' + monsterId.toString() + ' from CALLDATA', [])
-      monster.onCalldataAnimatedHash = call.inputs.txHash.toHexString()
+      log.warning('Handling animated 0xmon #' + monsterNumber.toString() + ' from CALLDATA', [])
+      monster.onChainAnimated = packedData
     }
   }
 
   monster.save()
+}
+
+function createOrLoadMonster(monsterNumber: BigInt): Monster {
+  log.warning('0xmon #' + monsterNumber.toString(), [])
+
+  let monsterId = monsterNumber.toHexString()
+  let monster = Monster.load(monsterId)
+  if (monster == null) {
+    monster = new Monster(monsterId)
+  }
+  return monster!
+}
+
+function unpackOnChainData(txHash: Bytes, packedData: string): void {
+  let data = packedData.split('|')
+  let onChainData = new OnChainData(txHash.toHexString())
+
+  if (data.length === 4) {
+    onChainData.name = data[0]
+    onChainData.lore = data[1]
+    onChainData.epithet = data[2]
+    onChainData.image = data[3]
+  }
+
+  onChainData.save()
 }
