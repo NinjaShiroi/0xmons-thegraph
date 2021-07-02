@@ -46,22 +46,22 @@ export function handleRegisterMonster(call: RegisterMonCall): void {
   let monsterNumber = call.inputs.id
   let monster = createOrLoadMonster(monsterNumber)
   let txHash = call.transaction.hash
-  let packedData = call.inputs.txHash.toString()
+  let packedData = call.inputs.txHash
 
-  if (packedData.includes('|')) {
+  if (packedData.toString().includes('|')) {
     // encoded in storage
-    log.warning('Handling static 0xmon #' + monsterNumber.toString() + ' from STORAGE', [])
-    unpackOnChainData(txHash, packedData)
-    monster.onChainStatic = packedData
+    log.warning('Handling static 0xmon #' + monsterNumber.toString() + ' from STORAGE ' + txHash.toHexString(), [])
+    unpackOnChainData(txHash, packedData.toString())
+    monster.onChainStatic = txHash.toHexString()
   } else {
     // encoded in calldata
     // in that case packedData is in fact the hash of the tx containing the packedData
     if (call.inputs.isStatic) {
-      log.warning('Handling static 0xmon #' + monsterNumber.toString() + ' from CALLDATA', [])
-      monster.onChainStatic = packedData
+      log.warning('Handling static 0xmon #' + monsterNumber.toString() + ' from CALLDATA ' + packedData.toHexString(), [])
+      monster.onChainStatic = packedData.toHexString()
     } else {
-      log.warning('Handling animated 0xmon #' + monsterNumber.toString() + ' from CALLDATA', [])
-      monster.onChainAnimated = packedData
+      log.warning('Handling animated 0xmon #' + monsterNumber.toString() + ' from CALLDATA ' + packedData.toHexString(), [])
+      monster.onChainAnimated = packedData.toHexString()
     }
   }
 

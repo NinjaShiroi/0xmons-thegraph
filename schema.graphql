@@ -20,7 +20,7 @@ type Monster @entity {
 }
 
 type OnChainData @entity {
-  id: ID!, # hash of the uploadMon() for calldata, hash of the registerMon() for storage
+  id: ID! # hash of the uploadMon() for calldata, hash of the registerMon() for storage
   name: String
   lore: String
   epithet: String
