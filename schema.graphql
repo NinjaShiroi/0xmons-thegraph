@@ -25,5 +25,6 @@ type OnChainData @entity {
   lore: String
   epithet: String
   image: String
+  isOnStorage: Boolean
 }
 

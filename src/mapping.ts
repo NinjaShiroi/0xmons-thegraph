@@ -39,7 +39,7 @@ export function handleUploadMonster(call: UploadMonCall): void {
 
   log.warning('Handling calldata encoding', [])
 
-  unpackOnChainData(txHash, packedData)
+  unpackOnChainData(txHash, packedData, false)
 }
 
 export function handleRegisterMonster(call: RegisterMonCall): void {
@@ -51,7 +51,7 @@ export function handleRegisterMonster(call: RegisterMonCall): void {
   if (hasThreeSeparator(packedData.toString())) {
     // encoded in storage
     log.warning('Handling static 0xmon #' + monsterNumber.toString() + ' from STORAGE ' + txHash.toHexString(), [])
-    unpackOnChainData(txHash, packedData.toString())
+    unpackOnChainData(txHash, packedData.toString(), true)
     monster.onChainStatic = txHash.toHexString()
   } else {
     // encoded in calldata
@@ -79,7 +79,7 @@ function createOrLoadMonster(monsterNumber: BigInt): Monster {
   return monster!
 }
 
-function unpackOnChainData(txHash: Bytes, packedData: string): void {
+function unpackOnChainData(txHash: Bytes, packedData: string, isOnStorage: boolean): void {
   let data = packedData.split('|')
   let onChainData = new OnChainData(txHash.toHexString())
 
@@ -88,6 +88,7 @@ function unpackOnChainData(txHash: Bytes, packedData: string): void {
     onChainData.epithet = data[1]
     onChainData.lore = data[2]
     onChainData.image = data[3]
+    onChainData.isOnStorage = isOnStorage
   }
 
   onChainData.save()
