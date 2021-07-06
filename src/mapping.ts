@@ -85,8 +85,8 @@ function unpackOnChainData(txHash: Bytes, packedData: string): void {
 
   if (data.length === 4) {
     onChainData.name = data[0]
-    onChainData.lore = data[1]
-    onChainData.epithet = data[2]
+    onChainData.epithet = data[1]
+    onChainData.lore = data[2]
     onChainData.image = data[3]
   }
 
