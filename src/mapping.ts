@@ -48,7 +48,7 @@ export function handleRegisterMonster(call: RegisterMonCall): void {
   let txHash = call.transaction.hash
   let packedData = call.inputs.txHash
 
-  if (packedData.toString().includes('|')) {
+  if (hasThreeSeparator(packedData.toString())) {
     // encoded in storage
     log.warning('Handling static 0xmon #' + monsterNumber.toString() + ' from STORAGE ' + txHash.toHexString(), [])
     unpackOnChainData(txHash, packedData.toString())
@@ -91,4 +91,14 @@ function unpackOnChainData(txHash: Bytes, packedData: string): void {
   }
 
   onChainData.save()
+}
+
+function hasThreeSeparator(text: string): boolean {
+  let count = 0;
+
+  for (let index = text.indexOf('|'); index != -1; index = text.indexOf('|', index + 1)) {
+    count++
+  }
+
+  return count === 3
 }
